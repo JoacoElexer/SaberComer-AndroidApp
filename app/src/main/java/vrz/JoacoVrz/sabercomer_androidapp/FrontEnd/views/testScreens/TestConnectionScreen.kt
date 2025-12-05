@@ -1,8 +1,7 @@
-package vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views
+package vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views.testScreens
 
 import androidx.compose.runtime.Composable
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
