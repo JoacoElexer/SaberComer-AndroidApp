@@ -32,8 +32,10 @@ import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.LoginViewModel
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.PatientsViewModel
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.RecordMedidasViewModel
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.SaberComerViewModelFactory
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views.CrearPacienteScreen
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views.HomeScreen
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views.LoginScreen
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views.PatientDetailScreen
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views.testScreens.TestConnectionScreen
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views.testScreens.TestControlScreen
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.views.testScreens.TestLoginScreen
@@ -81,7 +83,7 @@ class MainActivity : ComponentActivity() {
 
                     // 3. CREAR PACIENTE
                     composable(Screen.CrearPaciente.route) {
-                        CrearPacienteScreenPlaceholder(navController)
+                        CrearPacienteScreen(navController, viewModel(factory = factory))
                     }
 
                     // 4. DETALLE PACIENTE (Recibe ID)
@@ -90,7 +92,7 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("pacienteId") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val pacienteId = backStackEntry.arguments?.getString("pacienteId") ?: ""
-                        DetallePacienteScreenPlaceholder(navController, pacienteId)
+                        PatientDetailScreen(navController, pacienteId, viewModel(factory = factory))
                     }
 
                     // 5. CALENDARIO

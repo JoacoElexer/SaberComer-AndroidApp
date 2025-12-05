@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -42,8 +44,15 @@ import vrz.JoacoVrz.sabercomer_androidapp.R
 @Composable
 fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
     val state by viewModel.loginState.collectAsStateWithLifecycle()
-    var correo by remember { mutableStateOf("") }
-    var pin by remember { mutableStateOf("") } // TODO: eliminar valores por defecto
+    var correo by remember { mutableStateOf("joacoe.vrz@example.com") }
+    var pin by remember { mutableStateOf("root") } // TODO: eliminar valores por defecto
+
+    val buttonBackground = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF396BC2),
+            Color(0xFF2153A7)
+        )
+    )
 
     LaunchedEffect(state) {
         if(state is LoginViewModel.LoginState.Success) {
@@ -137,18 +146,26 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
                         onClick = { viewModel.login(correo, pin) },
                         modifier = Modifier
                             .width(300.dp)
-                            .clip(RoundedCornerShape(50.dp)),
+                            .clip(RoundedCornerShape(50.dp))
+                            .background(
+                                brush = buttonBackground
+                            ),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        ),
+                        elevation = null,
                         enabled = state !is LoginViewModel.LoginState.Loading
                     ) {
                         if(state is LoginViewModel.LoginState.Loading) {
                             CircularProgressIndicator(
-                                color = Color.Black,
+                                color = Color.White,
                                 modifier = Modifier.size(24.dp),
                                 strokeWidth = 2.dp
                             )
                         } else {
                             Text(
-                                "Login"
+                                "Login",
+                                color = Color.White
                             )
                         }
                     }
@@ -160,7 +177,7 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
                         Spacer(modifier = Modifier.width(7.dp))
                         Text(
                             text = "sign up",
-                            color = Color.Blue,
+                            color = Color(0xFF2153A7),
                             modifier = Modifier
                                 .clickable(
                                     onClick = {} //{ navController.navigate("RegisterScreenRoute") }

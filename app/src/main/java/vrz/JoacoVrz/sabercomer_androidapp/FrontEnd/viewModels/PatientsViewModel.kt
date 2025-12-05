@@ -60,6 +60,21 @@ class PatientsViewModel(private val repository: SaberComerRepository) : ViewMode
         }
     }
 
+    fun cargarDetallePAciente(id: String) {
+        if (id.isBlank()) {
+            _pacienteSeleccionado.value = null
+            return
+        }
+        viewModelScope.launch {
+            _isLoading.value = true
+            when (val result = repository.getPacientePorId(id)) {
+                is Resource.Success -> _pacienteSeleccionado.value = result.data
+                is Resource.Error -> _errorMessage.value = result.message
+                else -> {}
+            }
+        }
+    }
+
     fun seleccionarPaciente(paciente: Paciente) {
         _pacienteSeleccionado.value = paciente
     }
@@ -82,7 +97,6 @@ class PatientsViewModel(private val repository: SaberComerRepository) : ViewMode
     fun actualizarPaciente(paciente: Paciente) {
         viewModelScope.launch {
             _isLoading.value = true
-            // Usamos paciente.id como identificador
             when (val result = repository.actualizarPaciente(paciente.id, paciente)) {
                 is Resource.Success -> {
                     _successMessage.value = "Paciente actualizado"

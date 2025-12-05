@@ -21,10 +21,8 @@ class ControlClinicoViewModel(private val repository: SaberComerRepository) : Vi
     private val _successMessage = MutableStateFlow<String?>(null)
     val successMessage: StateFlow<String?> = _successMessage
 
-    // ID del paciente cargado actualmente
     private var currentPacienteId: String? = null
 
-    // Cargar historial de un paciente específico
     fun cargarControles(pacienteId: String) {
         currentPacienteId = pacienteId
         viewModelScope.launch {
@@ -62,7 +60,6 @@ class ControlClinicoViewModel(private val repository: SaberComerRepository) : Vi
     fun actualizarControl(control: ControlClinico) {
         viewModelScope.launch {
             _isLoading.value = true
-            // Importante: Usamos mongoId (_id) para actualizar
             when (val result = repository.actualizarControlClinico(control.mongoId, control)) {
                 is Resource.Success -> {
                     _successMessage.value = "Control actualizado"
@@ -78,7 +75,6 @@ class ControlClinicoViewModel(private val repository: SaberComerRepository) : Vi
     fun borrarControl(mongoId: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            // Importante: Usamos mongoId (_id) para borrar
             when (val result = repository.borrarControlClinico(mongoId)) {
                 is Resource.Success -> {
                     _successMessage.value = "Control eliminado"
