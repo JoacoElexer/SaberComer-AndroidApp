@@ -18,6 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.FloatingActionButton
@@ -211,12 +214,55 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
             value = paciente.ocupacion.orEmpty(),
             setter = { onValueChange(paciente.copy(ocupacion = it)) }
         )
+        Campo(
+            label = "Dirección",
+            value = paciente.direccion.orEmpty(),
+            setter = { onValueChange(paciente.copy(direccion = it)) }
+        )
+        Campo(
+            label = "Ciudad",
+            value = paciente.ciudad.orEmpty(),
+            setter = { onValueChange(paciente.copy(ciudad = it)) }
+        )
 
         // Campo de Fechas (Solo lectura para esta demo, pero se puede editar)
         CampoSoloLectura(label = "Fecha Nacimiento", value = paciente.fechaNacimiento)
         CampoSoloLectura(label = "Fecha de Inicio", value = paciente.fechaInicio)
 
         Spacer(modifier = Modifier.height(20.dp))
+
+        SeccionExpandible(titulo = "Antecedentes Heredofamiliares") {
+            Column() {
+                SwitchCampo(
+                    label = "Hipertensión (HTA)",
+                    checked = paciente.ahf?.hta?: false,
+                    enabled = isEditing,
+                    onCheckedChange = { check ->
+                        val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(hta = check)
+                        onValueChange(paciente.copy(ahf = nuevoAHF)) }
+                )
+                SwitchCampo(
+                    label = "Diabetes (DM)",
+                    checked = paciente.ahf?.dm?: false,
+                    enabled = isEditing,
+                    onCheckedChange = { check ->
+                        val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(dm = check)
+                        onValueChange(paciente.copy(ahf = nuevoAHF)) }
+                )
+
+                Campo(
+                    label = "Otros AHFs",
+                    value = paciente.ahf?.ahfOtros.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(ahfOtros = valor)
+                        onValueChange(paciente.copy(ahf = nuevoAHF))
+                    }
+                )
+            }
+        }
+
+
+        /*
         Text("Antecedentes Heredofamiliares", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
         Divider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -268,7 +314,7 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
                 val num = valor.toDoubleOrNull() ?: 0.0
                 onValueChange(paciente.copy(cdp = pesoActual.copy(pesoIdeal = num)))
             }
-        )
+        )*/
     }
 }
 
@@ -324,5 +370,35 @@ fun CampoSoloLectura(label: String, value: String) {
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = Color.Black)
         Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = Color.Black)
+    }
+}
+
+@Composable
+fun SeccionExpandible(
+    titulo: String,
+    contenido: @Composable () -> Unit
+) {
+    var expandido by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        onClick = { expandido = !expandido } // Al tocar la tarjeta se abre/cierra
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = titulo, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = if (expandido) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null
+                )
+            }
+            if (expandido) {
+                Spacer(modifier = Modifier.height(8.dp))
+                contenido() // Aquí van tus TextFields
+            }
+        }
     }
 }
