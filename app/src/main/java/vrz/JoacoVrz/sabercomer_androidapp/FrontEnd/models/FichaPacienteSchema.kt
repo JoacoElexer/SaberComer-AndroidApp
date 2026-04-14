@@ -7,47 +7,55 @@ data class Paciente(
     val id: String,
     val nombre: String,
     val direccion: String? = "",
-    val noCasa: Int? = null,
-    val colonia: String? = "",
     val ciudad: String? = "",
     val telefono: String?,
     val fechaNacimiento: String, // String ISO desde la API
     val fechaInicio: String,     // String ISO desde la API
     val ocupacion: String? = "",
+    // --- Sub-documentos ---
+    val ahf: AntecedentesHeredoFamiliares? = null,
+    val apnp: AntecedentesPersonalesNoPatologicos? = null,
+    val app: AntecedentesPersonalesPatologicos? = null,
+    val ago: AntecedentesGinecoObstetricos? = null,
+    val cdp: ControlDePeso? = null,
+    val notasAdicionales: String? = ""
+)
 
-    // --- Antecedentes Heredofamiliares y Patológicos (Booleanos) ---
-    @SerializedName("HTA") val hta: Boolean = false,       // Hipertensión
-    @SerializedName("DM") val dm: Boolean = false,         // Diabetes Mellitus
-    @SerializedName("CA") val ca: Boolean = false,         // Cáncer
-    val tiroides: Boolean = false,
-    val cardiopatias: Boolean = false,
-    @SerializedName("AHFOtros") val ahfOtros: String? = "Ninguno",
+// --- Antecedentes Heredofamiliares (Booleanos) ---
+data class AntecedentesHeredoFamiliares (
+    @SerializedName("HTA") val hta: Boolean? = false, // Hipertensión
+    @SerializedName("DM") val dm: Boolean? = false, // Diabetes Mellitus
+    @SerializedName("CA") val ca: Boolean? = false, // Cáncer
+    val tiroides: Boolean? = false,
+    val cardiopatias: Boolean? = false,
+    @SerializedName("ahfOtros") val ahfOtros: String? = "Ninguno"
+)
 
-    // --- Hábitos ---
+
+// --- Antecedentes Personales no Patologicos (Booleanos) ---
+data class AntecedentesPersonalesNoPatologicos (
     val tabaquismo: Boolean = false,
     val drogas: Boolean = false,
-    @SerializedName("OH") val oh: Boolean = false,         // Alcoholismo
+    @SerializedName("OH") val oh: Boolean = false  // Alcoholismo
+)
 
-    // --- Antecedentes Personales ---
+
+
+// --- Antecedentes Personales Patologicos ---
+data class AntecedentesPersonalesPatologicos(
     val enfermedadesPadecidas: String? = "Ninguna",
     val antecedentesTraumaticos: String? = "Ninguno",
     val antecedentesQuirurgicos: String? = "Ninguno",
     val alergiasMedicamentos: String? = "Ninguna",
     val alergiasAlimentos: String? = "Ninguna",
-
-    // --- Sub-documentos ---
-    val antecedentesGinecoObstetricos: AntecedentesGinecoObstetricos? = null,
-    val controlDePeso: ControlDePeso? = null,
-
-    val notasAdicionales: String? = ""
 )
 
 data class ControlDePeso(
     val antecedentesTratamientosCP: String? = "",
-    val pesoInicio: Double? = null,
-    val pesoIdeal: Double? = null,
-    val estatura: Double? = null,
-    val suIdeal: Double? = null
+    val pesoInicio: Double? = 0.0,
+    val pesoIdeal: Double? = 0.0,
+    val estatura: Double? = 0.0,
+    val suIdeal: Double? = 0.0
 )
 
 data class AntecedentesGinecoObstetricos(

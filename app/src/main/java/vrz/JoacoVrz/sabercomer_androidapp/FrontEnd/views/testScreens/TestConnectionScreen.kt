@@ -102,9 +102,9 @@ fun PacienteCard(paciente: Paciente) {
             Text(text = "Tel: ${paciente.telefono ?: "Sin número"}", style = MaterialTheme.typography.bodyMedium)
 
             // Ejemplo de acceso a subdocumento
-            if (paciente.controlDePeso?.pesoInicio != null) {
+            if (paciente.cdp?.pesoInicio != null) {
                 Text(
-                    text = "Peso Inicio: ${paciente.controlDePeso.pesoInicio} kg",
+                    text = "Peso Inicio: ${paciente.cdp.pesoInicio} kg",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray
                 )

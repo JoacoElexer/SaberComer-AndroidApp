@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.HeaderComponent
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesHeredoFamiliares
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.ControlDePeso
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.Paciente
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.PatientsViewModel
 
@@ -221,21 +223,28 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
         // --- SWITCHES DE BOOLEANOS ---
         SwitchCampo(
             label = "Hipertensión (HTA)",
-            checked = paciente.hta,
+            checked = paciente.ahf?.hta?: false,
             enabled = isEditing,
-            onCheckedChange = { onValueChange(paciente.copy(hta = it)) }
+            onCheckedChange = { check ->
+                val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(hta = check)
+                onValueChange(paciente.copy(ahf = nuevoAHF)) }
         )
         SwitchCampo(
             label = "Diabetes (DM)",
-            checked = paciente.dm,
+            checked = paciente.ahf?.dm?: false,
             enabled = isEditing,
-            onCheckedChange = { onValueChange(paciente.copy(dm = it)) }
+            onCheckedChange = { check ->
+                val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(dm = check)
+                onValueChange(paciente.copy(ahf = nuevoAHF)) }
         )
 
         Campo(
             label = "Otros AHFs",
-            value = paciente.ahfOtros.orEmpty(),
-            setter = { onValueChange(paciente.copy(ahfOtros = it)) }
+            value = paciente.ahf?.ahfOtros.orEmpty(),
+            setter = { valor ->
+                val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(ahfOtros = valor)
+                onValueChange(paciente.copy(ahf = nuevoAHF))
+            }
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -243,18 +252,22 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
         Divider(modifier = Modifier.padding(vertical = 4.dp))
 
         // --- SUBDOCUMENTO CONTROL DE PESO ---
-        val peso = paciente.controlDePeso
+        val pesoActual = paciente.cdp ?: ControlDePeso()
         Campo(
             label = "Estatura (cm)",
-            value = peso?.estatura?.toString().orEmpty(),
+            value = if (pesoActual.estatura == 0.0) "" else pesoActual.estatura?.toString().orEmpty(),
             keyboardType = KeyboardType.Number,
-            setter = { onValueChange(paciente.copy(controlDePeso = peso?.copy(estatura = it.toDoubleOrNull()))) }
+            setter = { valor -> val num = valor.toDoubleOrNull() ?: 0.0
+            onValueChange(paciente.copy(cdp = pesoActual.copy(estatura = num))) }
         )
         Campo(
             label = "Peso Ideal (kg)",
-            value = peso?.pesoIdeal?.toString().orEmpty(),
+            value = if(pesoActual.pesoIdeal == 0.0) "" else pesoActual.pesoIdeal?.toString().orEmpty(),
             keyboardType = KeyboardType.Number,
-            setter = { onValueChange(paciente.copy(controlDePeso = peso?.copy(pesoIdeal = it.toDoubleOrNull()))) }
+            setter = { valor ->
+                val num = valor.toDoubleOrNull() ?: 0.0
+                onValueChange(paciente.copy(cdp = pesoActual.copy(pesoIdeal = num)))
+            }
         )
     }
 }

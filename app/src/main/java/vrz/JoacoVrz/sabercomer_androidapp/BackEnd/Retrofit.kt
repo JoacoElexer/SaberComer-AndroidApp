@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     // Cambiar cada vez que ejecute ngrok hasta desplegar la api en web
-    private const val BASE_URL = "https://90535a8f9b42.ngrok-free.app/"
+    private const val BASE_URL = "https://sabercomer-api.onrender.com/"
 
     private val okHttpClient: OkHttpClient by lazy {
         val logging = HttpLoggingInterceptor().apply {

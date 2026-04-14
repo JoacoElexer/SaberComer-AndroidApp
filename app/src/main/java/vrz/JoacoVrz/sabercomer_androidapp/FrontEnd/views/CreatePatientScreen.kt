@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesHeredoFamiliares
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -66,8 +67,8 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
                 nombre = "",
                 fechaNacimiento = "",
                 fechaInicio = todayDate,
-                controlDePeso = ControlDePeso(),
-                antecedentesGinecoObstetricos = AntecedentesGinecoObstetricos(),
+                cdp = ControlDePeso(),
+                ago = AntecedentesGinecoObstetricos(),
                 telefono = ""
             )
         )
@@ -182,14 +183,26 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
                             Text("II. Antecedentes Heredofamiliares", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
                             Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-                            SwitchCampo(label = "Hipertensión (HTA)", checked = nuevoPaciente.hta) {
-                                nuevoPaciente = nuevoPaciente.copy(hta = it)
+                            SwitchCampo(
+                                label = "Hipertensión (HTA)",
+                                checked = nuevoPaciente.ahf?.hta?: false) {
+                                checked ->
+                                val nuevoAHF = (nuevoPaciente.ahf?: AntecedentesHeredoFamiliares()).copy(hta = checked)
+                                nuevoPaciente = nuevoPaciente.copy(ahf = nuevoAHF)
                             }
-                            SwitchCampo(label = "Diabetes (DM)", checked = nuevoPaciente.dm) {
-                                nuevoPaciente = nuevoPaciente.copy(dm = it)
+                            SwitchCampo(
+                                label = "Diabetes (DM)",
+                                checked = nuevoPaciente.ahf?.dm?: false) {
+                                checked ->
+                                val nuevoAHF = (nuevoPaciente.ahf?: AntecedentesHeredoFamiliares()).copy(hta = checked)
+                                nuevoPaciente = nuevoPaciente.copy(ahf = nuevoAHF)
                             }
-                            InputText(label = "Otros AHFs", value = nuevoPaciente.ahfOtros.orEmpty()) {
-                                nuevoPaciente = nuevoPaciente.copy(ahfOtros = it)
+                            InputText(
+                                label = "Otros AHFs",
+                                value = nuevoPaciente.ahf?.ahfOtros.orEmpty()) {
+                                texto ->
+                                val nuevoAHF = (nuevoPaciente.ahf?: AntecedentesHeredoFamiliares()).copy(ahfOtros = texto)
+                                nuevoPaciente = nuevoPaciente.copy(ahf = nuevoAHF)
                             }
                         }
 
@@ -198,9 +211,9 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
                             Text("III. Antecedentes Gineco-Obstétricos", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
                             Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-                            InputText(label = "Gestaciones (G)", value = nuevoPaciente.antecedentesGinecoObstetricos?.g.orEmpty()) {
+                            InputText(label = "Gestaciones (G)", value = nuevoPaciente.ago?.g.orEmpty()) {
                                 nuevoPaciente = nuevoPaciente.copy(
-                                    antecedentesGinecoObstetricos = nuevoPaciente.antecedentesGinecoObstetricos?.copy(g = it)
+                                    ago = nuevoPaciente.ago?.copy(g = it)
                                 )
                             }
                             Spacer(modifier = Modifier.height(60.dp))
