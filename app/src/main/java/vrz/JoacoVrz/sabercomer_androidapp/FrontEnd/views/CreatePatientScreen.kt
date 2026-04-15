@@ -46,10 +46,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesHeredoFamiliares
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesPersonalesNoPatologicos
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesPersonalesPatologicos
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -60,6 +67,7 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
         LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
     }
 
+    // Inicializamos el objeto con todas sus subclases para evitar NullPointer al editar
     var nuevoPaciente by remember {
         mutableStateOf(
             Paciente(
@@ -67,9 +75,15 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
                 nombre = "",
                 fechaNacimiento = "",
                 fechaInicio = todayDate,
-                cdp = ControlDePeso(),
+                ahf = AntecedentesHeredoFamiliares(),
+                apnp = AntecedentesPersonalesNoPatologicos(),
+                app = AntecedentesPersonalesPatologicos(),
                 ago = AntecedentesGinecoObstetricos(),
-                telefono = ""
+                cdp = ControlDePeso(),
+                telefono = "",
+                direccion = "",
+                ciudad = "",
+                ocupacion = ""
             )
         )
     }
@@ -86,13 +100,15 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
         colors = listOf(Color(0xFF006192), Color(0xFF5ABDEF))
     )
 
-    val onSave = fun() {
+    val onSave = {
         if (nuevoPaciente.nombre.isBlank() || nuevoPaciente.fechaNacimiento.isBlank()) {
-            println("Error: Nombre y Fecha de Nacimiento son obligatorios.")
-            return
+            // Aquí podrías disparar un mensaje de error en el UI
+            //viewModel.setManualError("Nombre y Fecha de Nacimiento son requeridos")
+            println("Error al crear paciente")
+        } else {
+            viewModel.crearPaciente(nuevoPaciente)
+            println("Creando nuevo paciente")
         }
-
-        viewModel.crearPaciente(nuevoPaciente)
     }
 
     LaunchedEffect(successMessage) {
@@ -103,28 +119,21 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
     }
 
     Scaffold(
-
         floatingActionButton = {
-                FloatingActionButton(
-                    onClick = onSave,
-                    containerColor = Color.Transparent,
-                    contentColor = Color.White,
-                    modifier = Modifier.background(
-                        brush = fabGradient,
-                        shape = MaterialTheme.shapes.extraLarge
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = "Guardar"
-                    )
-                }
+            FloatingActionButton(
+                onClick = onSave,
+                containerColor = Color(0xFF006192), // Color sólido para evitar el cuadro blanco
+                contentColor = Color.White,
+                shape = MaterialTheme.shapes.extraLarge
+            ) {
+                Icon(imageVector = Icons.Filled.Check, contentDescription = "Guardar")
+            }
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier.fillMaxSize().padding(paddingValues).background(Color.White)
         ) {
-
+            // HEADER
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -132,134 +141,38 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
                     .background(brush = headerBackground, shape = RoundedCornerShape(bottomEnd = 70.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                HeaderComponent(
-                    title = "Nuevo Paciente",
-                    subtitle = "Ficha de Registro"
-                )
+                HeaderComponent(title = "Nuevo Paciente", subtitle = "Ficha de Registro")
             }
 
+            // CUERPO
             Box(
-                modifier = Modifier
-                    .background(color = contentBackground)
-                    .fillMaxWidth()
-                    .weight(4f)
-            )
-            {
+                modifier = Modifier.background(color = contentBackground).fillMaxWidth().weight(4f)
+            ) {
                 Column(
                     modifier = Modifier
                         .background(Color.White, shape = RoundedCornerShape(topStart = 50.dp))
                         .fillMaxSize()
                         .padding(top = 16.dp)
                 ) {
+                    if (isLoading) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
+                    }
 
                     errorMessage?.let { Text(it, color = Color.Red, modifier = Modifier.padding(16.dp)) }
 
                     LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-
                         item {
-                            Text("I. Datos Generales", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
-                            Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-                            // Nombre (Obligatorio)
-                            InputText(label = "Nombre *", value = nuevoPaciente.nombre) {
-                                nuevoPaciente = nuevoPaciente.copy(nombre = it)
-                            }
-                            // Teléfono
-                            InputText(label = "Teléfono", value = nuevoPaciente.telefono.orEmpty(), keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone) {
-                                nuevoPaciente = nuevoPaciente.copy(telefono = it)
-                            }
-                            // Fecha Nacimiento (Obligatorio)
-                            InputText(label = "Fecha Nacimiento (AAAA-MM-DD) *", value = nuevoPaciente.fechaNacimiento) {
-                                nuevoPaciente = nuevoPaciente.copy(fechaNacimiento = it)
-                            }
-                            // Ocupación
-                            InputText(label = "Ocupación", value = nuevoPaciente.ocupacion.orEmpty()) {
-                                nuevoPaciente = nuevoPaciente.copy(ocupacion = it)
-                            }
-                        }
-
-                        item {
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Text("II. Antecedentes Heredofamiliares", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
-                            Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-                            SwitchCampo(
-                                label = "Hipertensión (HTA)",
-                                checked = nuevoPaciente.ahf?.hta?: false) {
-                                checked ->
-                                val nuevoAHF = (nuevoPaciente.ahf?: AntecedentesHeredoFamiliares()).copy(hta = checked)
-                                nuevoPaciente = nuevoPaciente.copy(ahf = nuevoAHF)
-                            }
-                            SwitchCampo(
-                                label = "Diabetes (DM)",
-                                checked = nuevoPaciente.ahf?.dm?: false) {
-                                checked ->
-                                val nuevoAHF = (nuevoPaciente.ahf?: AntecedentesHeredoFamiliares()).copy(hta = checked)
-                                nuevoPaciente = nuevoPaciente.copy(ahf = nuevoAHF)
-                            }
-                            InputText(
-                                label = "Otros AHFs",
-                                value = nuevoPaciente.ahf?.ahfOtros.orEmpty()) {
-                                texto ->
-                                val nuevoAHF = (nuevoPaciente.ahf?: AntecedentesHeredoFamiliares()).copy(ahfOtros = texto)
-                                nuevoPaciente = nuevoPaciente.copy(ahf = nuevoAHF)
-                            }
-                        }
-
-                        item {
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Text("III. Antecedentes Gineco-Obstétricos", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
-                            Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-                            InputText(label = "Gestaciones (G)", value = nuevoPaciente.ago?.g.orEmpty()) {
-                                nuevoPaciente = nuevoPaciente.copy(
-                                    ago = nuevoPaciente.ago?.copy(g = it)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(60.dp))
+                            // Reutilizamos DetallesDeFicha pero en modo edición forzado
+                            DetallesDeFicha(
+                                paciente = nuevoPaciente,
+                                isEditing = true,
+                                onValueChange = { nuevoPaciente = it }
+                            )
+                            Spacer(modifier = Modifier.height(80.dp)) // Espacio para el FAB
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun InputText(label: String, value: String, keyboardType: KeyboardType = KeyboardType.Text, onValueChange: (String) -> Unit) {
-    val primaryColor = Color(0xFF006192)
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        label = { Text(label) },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        singleLine = true,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            disabledContainerColor = Color.LightGray.copy(alpha = 0.3f),
-
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black,
-
-            focusedLabelColor = primaryColor,
-            unfocusedLabelColor = Color.Gray,
-
-            focusedBorderColor = primaryColor,
-            unfocusedBorderColor = Color.LightGray
-        )
-    )
-}
-
-@Composable
-fun SwitchCampo(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge, color = Color.Black)
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }

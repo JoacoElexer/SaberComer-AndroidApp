@@ -64,12 +64,13 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
     ){
-        Image(
-            painter = painterResource(R.drawable.background_img_top),
-            contentDescription = null,
-            contentScale = ContentScale.Crop
-        )
+//        Image(
+//            painter = painterResource(R.drawable.background_img_top),
+//            contentDescription = null,
+//            contentScale = ContentScale.Crop
+//        )
         Column (
             modifier = Modifier
                 .fillMaxSize()
@@ -84,16 +85,9 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
             ){
                 Box(
                     modifier = Modifier
-                        .width(150.dp)
-                        .height(150.dp)
+                        .fillMaxWidth()
                         .background(
-                            color = Color.White,
-                            shape = RoundedCornerShape(
-                                topStart = 35.dp,
-                                topEnd = 0.dp,
-                                bottomStart = 35.dp,
-                                bottomEnd = 35.dp
-                            )
+                            color = Color.Transparent
                         ),
                     contentAlignment = Alignment.Center
                 ){
@@ -101,7 +95,7 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
                         painter = painterResource(R.drawable.isologotipo_color_sin_letras),
                         contentDescription = null,
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.padding(5.dp)
+                        modifier = Modifier.padding(top = 35.dp)
                     )
                 }
             }
@@ -110,7 +104,7 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
                     .weight(2f)
                     .fillMaxSize()
                     .background(
-                        color = Color.White,
+                        color = Color(0xFF292929),
                         shape = RoundedCornerShape(
                             topStart = 60.dp,
                             topEnd = 0.dp,
@@ -124,8 +118,9 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     Text(
-                        "Login",
-                        fontSize = 40.sp
+                        "Iniciar Sesión",
+                        fontSize = 40.sp,
+                        color = Color.White
                     )
                     Spacer(Modifier.height(50.dp))
                     InputComponent("Email", "Example17@gmail.com", correo, onValueChange = { correo = it })
@@ -172,11 +167,12 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
                     Spacer(modifier = Modifier.height(40.dp))
                     Row {
                         Text(
-                            "Don't have an account?"
+                            "¿No estás registrado?",
+                            color = Color.White
                         )
                         Spacer(modifier = Modifier.width(7.dp))
                         Text(
-                            text = "sign up",
+                            text = "registrate",
                             color = Color(0xFF2153A7),
                             modifier = Modifier
                                 .clickable(

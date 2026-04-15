@@ -11,14 +11,14 @@ data class Paciente(
     val telefono: String?,
     val fechaNacimiento: String, // String ISO desde la API
     val fechaInicio: String,     // String ISO desde la API
-    val ocupacion: String? = "",
+    val ocupacion: String? = "Sin ocupación",
     // --- Sub-documentos ---
     val ahf: AntecedentesHeredoFamiliares? = null,
     val apnp: AntecedentesPersonalesNoPatologicos? = null,
     val app: AntecedentesPersonalesPatologicos? = null,
     val ago: AntecedentesGinecoObstetricos? = null,
     val cdp: ControlDePeso? = null,
-    val notasAdicionales: String? = ""
+    val notasAdicionales: String? = "N/A"
 )
 
 // --- Antecedentes Heredofamiliares (Booleanos) ---
@@ -51,7 +51,7 @@ data class AntecedentesPersonalesPatologicos(
 )
 
 data class ControlDePeso(
-    val antecedentesTratamientosCP: String? = "",
+    val antecedentesTratamientosCP: String? = "N/A",
     val pesoInicio: Double? = 0.0,
     val pesoIdeal: Double? = 0.0,
     val estatura: Double? = 0.0,
@@ -59,10 +59,10 @@ data class ControlDePeso(
 )
 
 data class AntecedentesGinecoObstetricos(
-    @SerializedName("G") val g: String? = "",
-    @SerializedName("P") val p: String? = "",
-    @SerializedName("C") val c: String? = "",
-    @SerializedName("A") val a: String? = "",
-    @SerializedName("FUR") val fur: String? = "", // Fecha Última Regla
-    @SerializedName("AgoOtros") val agoOtros: String? = ""
+    @SerializedName("G") val g: String? = "N/A",
+    @SerializedName("P") val p: String? = "N/A",
+    @SerializedName("C") val c: String? = "N/A",
+    @SerializedName("A") val a: String? = "N/A",
+    @SerializedName("FUR") val fur: String? = "N/A", // Fecha Última Regla
+    @SerializedName("agoOtros") val agoOtros: String? = "N/A"
 )

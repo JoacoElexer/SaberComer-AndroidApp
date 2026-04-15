@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -49,7 +50,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.HeaderComponent
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesGinecoObstetricos
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesHeredoFamiliares
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesPersonalesNoPatologicos
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesPersonalesPatologicos
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.ControlDePeso
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.Paciente
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.PatientsViewModel
@@ -100,7 +104,7 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
                     onClick = {
                         if (isEditing) onSave() else isEditing = true
                     },
-                    containerColor = Color.Transparent,
+                    containerColor = Color(0xFF006192),
                     contentColor = Color.White,
                     modifier = Modifier.background(
                         brush = fabGradient,
@@ -108,7 +112,7 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
                     )
                 ) {
                     Icon(
-                        imageVector = if (isEditing) Icons.Filled.Add else Icons.Filled.Edit,
+                        imageVector = if (isEditing) Icons.Filled.Save else Icons.Filled.Edit,
                         contentDescription = if (isEditing) "Guardar" else "Editar"
                     )
                 }
@@ -154,7 +158,7 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
                     errorMessage?.let { Text(it, color = Color.Red, modifier = Modifier.padding(16.dp)) }
 
                     pacienteDetalle?.let {
-                        LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                        LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).background(Color.Transparent, shape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp))) {
                             item {
                                 DetallesDeFicha(
                                     paciente = editablePaciente ?: it,
@@ -193,7 +197,7 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
         }
     }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).background(Color.Transparent, shape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp))) {
         Text("Información Básica", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
         Divider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -226,10 +230,65 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
         )
 
         // Campo de Fechas (Solo lectura para esta demo, pero se puede editar)
-        CampoSoloLectura(label = "Fecha Nacimiento", value = paciente.fechaNacimiento)
+        Campo(
+            label = "Fecha Nacimiento",
+            value = paciente.fechaNacimiento,
+            setter = { onValueChange(paciente.copy(fechaNacimiento = it)) }
+            )
         CampoSoloLectura(label = "Fecha de Inicio", value = paciente.fechaInicio)
 
         Spacer(modifier = Modifier.height(20.dp))
+
+        SeccionExpandible(titulo = "Control de peso") {
+            Column() {
+                Campo(
+                    label = "Antecedentes de tratamiento de control de peso",
+                    value = paciente.cdp?.antecedentesTratamientosCP.orEmpty(),
+                    setter = { valor ->
+                        val nuevoCDP = (paciente.cdp ?: ControlDePeso()).copy(
+                            antecedentesTratamientosCP = valor
+                        )
+                        onValueChange(paciente.copy(cdp = nuevoCDP))
+                    }
+                )
+                Campo(
+                    label = "Peso inicial",
+                    value = paciente.cdp?.pesoInicio.toString(),
+                    keyboardType = KeyboardType.Number,
+                    setter = { valor ->
+                        val num = valor.toDoubleOrNull() ?: 0.0
+                        onValueChange(paciente.copy(cdp = paciente.cdp?.copy(pesoInicio = num)))
+                    }
+                )
+                Campo(
+                    label = "Peso ideal",
+                    value = paciente.cdp?.pesoIdeal.toString(),
+                    keyboardType = KeyboardType.Number,
+                    setter = { valor ->
+                        val num = valor.toDoubleOrNull() ?: 0.0
+                        onValueChange(paciente.copy(cdp = paciente.cdp?.copy(pesoIdeal = num)))
+                    }
+                )
+                Campo(
+                    label = "Estatura (cm)",
+                    value = paciente.cdp?.estatura.toString(),
+                    keyboardType = KeyboardType.Number,
+                    setter = { valor ->
+                        val num = valor.toDoubleOrNull() ?: 0.0
+                        onValueChange(paciente.copy(cdp = paciente.cdp?.copy(estatura = num)))
+                    }
+                )
+                Campo(
+                    label = "Peso ideal segun el paciente",
+                    value = paciente.cdp?.suIdeal.toString(),
+                    keyboardType = KeyboardType.Number,
+                    setter = { valor ->
+                        val num = valor.toDoubleOrNull() ?: 0.0
+                        onValueChange(paciente.copy(cdp = paciente.cdp?.copy(suIdeal = num)))
+                    }
+                )
+            }
+        }
 
         SeccionExpandible(titulo = "Antecedentes Heredofamiliares") {
             Column() {
@@ -249,7 +308,30 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
                         val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(dm = check)
                         onValueChange(paciente.copy(ahf = nuevoAHF)) }
                 )
-
+                SwitchCampo(
+                    label = "Cancer (CA)",
+                    checked = paciente.ahf?.ca?: false,
+                    enabled = isEditing,
+                    onCheckedChange = { check ->
+                        val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(ca = check)
+                        onValueChange(paciente.copy(ahf = nuevoAHF)) }
+                )
+                SwitchCampo(
+                    label = "Tiroides",
+                    checked = paciente.ahf?.tiroides?: false,
+                    enabled = isEditing,
+                    onCheckedChange = { check ->
+                        val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(tiroides = check)
+                        onValueChange(paciente.copy(ahf = nuevoAHF)) }
+                )
+                SwitchCampo(
+                    label = "Cardiopatias",
+                    checked = paciente.ahf?.cardiopatias?: false,
+                    enabled = isEditing,
+                    onCheckedChange = { check ->
+                        val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(cardiopatias = check)
+                        onValueChange(paciente.copy(ahf = nuevoAHF)) }
+                )
                 Campo(
                     label = "Otros AHFs",
                     value = paciente.ahf?.ahfOtros.orEmpty(),
@@ -261,68 +343,138 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
             }
         }
 
-
-        /*
-        Text("Antecedentes Heredofamiliares", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
-        Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-        // --- SWITCHES DE BOOLEANOS ---
-        SwitchCampo(
-            label = "Hipertensión (HTA)",
-            checked = paciente.ahf?.hta?: false,
-            enabled = isEditing,
-            onCheckedChange = { check ->
-                val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(hta = check)
-                onValueChange(paciente.copy(ahf = nuevoAHF)) }
-        )
-        SwitchCampo(
-            label = "Diabetes (DM)",
-            checked = paciente.ahf?.dm?: false,
-            enabled = isEditing,
-            onCheckedChange = { check ->
-                val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(dm = check)
-                onValueChange(paciente.copy(ahf = nuevoAHF)) }
-        )
-
-        Campo(
-            label = "Otros AHFs",
-            value = paciente.ahf?.ahfOtros.orEmpty(),
-            setter = { valor ->
-                val nuevoAHF = (paciente.ahf?: AntecedentesHeredoFamiliares()).copy(ahfOtros = valor)
-                onValueChange(paciente.copy(ahf = nuevoAHF))
+        SeccionExpandible(titulo = "Antecedentes personales no patológicos") {
+            Column() {
+                SwitchCampo(
+                    label = "Tabaquismo",
+                    checked = paciente.apnp?.tabaquismo?: false,
+                    enabled = isEditing,
+                    onCheckedChange = { check ->
+                        val nuevoAPNP = (paciente.apnp?: AntecedentesPersonalesNoPatologicos()).copy(tabaquismo = check)
+                        onValueChange(paciente.copy(apnp = nuevoAPNP)) }
+                )
+                SwitchCampo(
+                    label = "Drogas",
+                    checked = paciente.apnp?.drogas?: false,
+                    enabled = isEditing,
+                    onCheckedChange = { check ->
+                        val nuevoAPNP = (paciente.apnp?: AntecedentesPersonalesNoPatologicos()).copy(drogas = check)
+                        onValueChange(paciente.copy(apnp = nuevoAPNP)) }
+                )
+                SwitchCampo(
+                    label = "OH",
+                    checked = paciente.apnp?.oh?: false,
+                    enabled = isEditing,
+                    onCheckedChange = { check ->
+                        val nuevoAPNP = (paciente.apnp?: AntecedentesPersonalesNoPatologicos()).copy(oh = check)
+                        onValueChange(paciente.copy(apnp = nuevoAPNP)) }
+                )
             }
-        )
+        }
 
-        Spacer(modifier = Modifier.height(20.dp))
-        Text("Control de Peso", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
-        Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-        // --- SUBDOCUMENTO CONTROL DE PESO ---
-        val pesoActual = paciente.cdp ?: ControlDePeso()
-        Campo(
-            label = "Estatura (cm)",
-            value = if (pesoActual.estatura == 0.0) "" else pesoActual.estatura?.toString().orEmpty(),
-            keyboardType = KeyboardType.Number,
-            setter = { valor -> val num = valor.toDoubleOrNull() ?: 0.0
-            onValueChange(paciente.copy(cdp = pesoActual.copy(estatura = num))) }
-        )
-        Campo(
-            label = "Peso Ideal (kg)",
-            value = if(pesoActual.pesoIdeal == 0.0) "" else pesoActual.pesoIdeal?.toString().orEmpty(),
-            keyboardType = KeyboardType.Number,
-            setter = { valor ->
-                val num = valor.toDoubleOrNull() ?: 0.0
-                onValueChange(paciente.copy(cdp = pesoActual.copy(pesoIdeal = num)))
+        SeccionExpandible(titulo = "Antecedentes personales patológicos") {
+            Column() {
+                Campo(
+                    label = "Enfermedades padecidas",
+                    value = paciente.app?.enfermedadesPadecidas.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAPP = (paciente.app?: AntecedentesPersonalesPatologicos()).copy(enfermedadesPadecidas = valor)
+                        onValueChange(paciente.copy(app = nuevoAPP))
+                    }
+                )
+                Campo(
+                    label = "Antecedentes traumaticos",
+                    value = paciente.app?.antecedentesTraumaticos.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAPP = (paciente.app?: AntecedentesPersonalesPatologicos()).copy(antecedentesTraumaticos = valor)
+                        onValueChange(paciente.copy(app = nuevoAPP))
+                    }
+                )
+                Campo(
+                    label = "Antecedentes quirurgicos",
+                    value = paciente.app?.antecedentesQuirurgicos.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAPP = (paciente.app?: AntecedentesPersonalesPatologicos()).copy(antecedentesQuirurgicos = valor)
+                        onValueChange(paciente.copy(app = nuevoAPP))
+                    }
+                )
+                Campo(
+                    label = "Alergias a medicamentos",
+                    value = paciente.app?.alergiasMedicamentos.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAPP = (paciente.app?: AntecedentesPersonalesPatologicos()).copy(alergiasMedicamentos = valor)
+                        onValueChange(paciente.copy(app = nuevoAPP))
+                    }
+                )
+                Campo(
+                    label = "Alergias a alimentos",
+                    value = paciente.app?.alergiasAlimentos.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAPP = (paciente.app?: AntecedentesPersonalesPatologicos()).copy(alergiasAlimentos = valor)
+                        onValueChange(paciente.copy(app = nuevoAPP))
+                    }
+                )
             }
-        )*/
+        }
+
+        SeccionExpandible(titulo = "Antecedentes gineco-obstetricos") {
+            Column() {
+                Campo(
+                    label = "G",
+                    value = paciente.ago?.g.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAGO = (paciente.ago?: AntecedentesGinecoObstetricos()).copy(g = valor)
+                        onValueChange(paciente.copy(ago = nuevoAGO))
+                    }
+                )
+                Campo(
+                    label = "P",
+                    value = paciente.ago?.p.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAGO = (paciente.ago?: AntecedentesGinecoObstetricos()).copy(p = valor)
+                        onValueChange(paciente.copy(ago = nuevoAGO))
+                    }
+                )
+                Campo(
+                    label = "C",
+                    value = paciente.ago?.c.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAGO = (paciente.ago?: AntecedentesGinecoObstetricos()).copy(c = valor)
+                        onValueChange(paciente.copy(ago = nuevoAGO))
+                    }
+                )
+                Campo(
+                    label = "A",
+                    value = paciente.ago?.a.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAGO = (paciente.ago?: AntecedentesGinecoObstetricos()).copy(a = valor)
+                        onValueChange(paciente.copy(ago = nuevoAGO))
+                    }
+                )
+                Campo(
+                    label = "FUR",
+                    value = paciente.ago?.fur.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAGO = (paciente.ago?: AntecedentesGinecoObstetricos()).copy(fur = valor)
+                        onValueChange(paciente.copy(ago = nuevoAGO))
+                    }
+                )
+                Campo(
+                    label = "Otros",
+                    value = paciente.ago?.agoOtros.orEmpty(),
+                    setter = { valor ->
+                        val nuevoAGO = (paciente.ago?: AntecedentesGinecoObstetricos()).copy(agoOtros = valor)
+                        onValueChange(paciente.copy(ago = nuevoAGO))
+                    }
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun InputText(label: String, value: String, keyboardType: KeyboardType = KeyboardType.Text, enabled: Boolean = true, onValueChange: (String) -> Unit) {
-
     val primaryColor = Color(0xFF006192)
-
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -342,7 +494,6 @@ fun InputText(label: String, value: String, keyboardType: KeyboardType = Keyboar
             focusedBorderColor = primaryColor,
             unfocusedBorderColor = Color.LightGray
         )
-        // -----------------------------------------------------------------
     )
 }
 
@@ -397,7 +548,7 @@ fun SeccionExpandible(
             }
             if (expandido) {
                 Spacer(modifier = Modifier.height(8.dp))
-                contenido() // Aquí van tus TextFields
+                contenido()
             }
         }
     }
