@@ -84,7 +84,12 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
         viewModel.cargarDetallePAciente(pacienteId)
     }
 
-    LaunchedEffect(successMessage) {
+    var mostrarDialogo by remember { mutableStateOf(false) }
+    LaunchedEffect(successMessage, errorMessage) {
+        if (successMessage != null || errorMessage != null) {
+            mostrarDialogo = true
+            viewModel.limpiarMensajes()
+        }
         if (successMessage != null && isEditing) {
             isEditing = false
             viewModel.limpiarMensajes()
@@ -106,10 +111,7 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
                     },
                     containerColor = Color(0xFF006192),
                     contentColor = Color.White,
-                    modifier = Modifier.background(
-                        brush = fabGradient,
-                        shape = MaterialTheme.shapes.extraLarge
-                    )
+                    shape = MaterialTheme.shapes.extraLarge
                 ) {
                     Icon(
                         imageVector = if (isEditing) Icons.Filled.Save else Icons.Filled.Edit,
@@ -176,6 +178,17 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
                     }
                 }
             }
+        }
+        if (mostrarDialogo) {
+            AvisoDialog(
+                titulo = if (errorMessage != null) "Atención" else "¡Éxito!",
+                mensaje = errorMessage ?: successMessage ?: "",
+                esError = errorMessage != null,
+                onDismiss = {
+                    mostrarDialogo = false
+                    viewModel.limpiarMensajes()
+                }
+            )
         }
     }
 }

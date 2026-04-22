@@ -32,6 +32,10 @@ class PatientsViewModel(private val repository: SaberComerRepository) : ViewMode
         cargarPacientes()
     }
 
+    fun setManualError(mensaje: String) {
+        _errorMessage.value = mensaje
+    }
+
     fun cargarPacientes() {
         viewModelScope.launch {
             _isLoading.value = true

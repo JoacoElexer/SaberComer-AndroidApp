@@ -101,13 +101,13 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
     )
 
     val onSave = {
-        if (nuevoPaciente.nombre.isBlank() || nuevoPaciente.fechaNacimiento.isBlank()) {
-            // Aquí podrías disparar un mensaje de error en el UI
-            //viewModel.setManualError("Nombre y Fecha de Nacimiento son requeridos")
-            println("Error al crear paciente")
-        } else {
-            viewModel.crearPaciente(nuevoPaciente)
-            println("Creando nuevo paciente")
+        viewModel.crearPaciente(nuevoPaciente)
+    }
+
+    var mostrarDialogo by remember { mutableStateOf(false) }
+    LaunchedEffect(successMessage, errorMessage) {
+        if (successMessage != null || errorMessage != null) {
+            mostrarDialogo = true
         }
     }
 
@@ -158,8 +158,6 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
                     }
 
-                    errorMessage?.let { Text(it, color = Color.Red, modifier = Modifier.padding(16.dp)) }
-
                     LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
                         item {
                             // Reutilizamos DetallesDeFicha pero en modo edición forzado
@@ -173,6 +171,17 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
                     }
                 }
             }
+        }
+        if (mostrarDialogo) {
+            AvisoDialog(
+                titulo = if (errorMessage != null) "Atención" else "¡Éxito!",
+                mensaje = errorMessage ?: successMessage ?: "",
+                esError = errorMessage != null,
+                onDismiss = {
+                    mostrarDialogo = false
+                    viewModel.limpiarMensajes() // Importante limpiar para que no se repita
+                }
+            )
         }
     }
 }

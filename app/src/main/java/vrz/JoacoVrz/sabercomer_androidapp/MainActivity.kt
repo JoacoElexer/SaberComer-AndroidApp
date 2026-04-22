@@ -77,7 +77,6 @@ class MainActivity : ComponentActivity() {
                     // 2. PANTALLA HOME (Lista de Pacientes)
                     composable(Screen.Home.route) {
                         val homeViewModel: PatientsViewModel = viewModel(factory = factory)
-
                         HomeScreen(navController, homeViewModel)
                     }
 

@@ -14,10 +14,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,6 +39,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,10 +50,10 @@ import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.LoginViewModel
 import vrz.JoacoVrz.sabercomer_androidapp.R
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
+fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
     val state by viewModel.loginState.collectAsStateWithLifecycle()
     var correo by remember { mutableStateOf("joacoe.vrz@example.com") }
-    var pin by remember { mutableStateOf("root") } // TODO: eliminar valores por defecto
+    var pin by remember { mutableStateOf("root") } // TODO: eliminar datos de login por defecto
 
     val buttonBackground = Brush.verticalGradient(
         colors = listOf(
@@ -55,11 +63,29 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
     )
 
     LaunchedEffect(state) {
-        if(state is LoginViewModel.LoginState.Success) {
+        if (state is LoginViewModel.LoginState.Success) {
             onLoginSuccess()
             viewModel.resetState()
         }
     }
+
+//    var mostrarDialogo by remember { mutableStateOf(false) }
+//    LaunchedEffect(successMessage, errorMessage) {
+//        if (successMessage != null || errorMessage != null) {
+//            mostrarDialogo = true
+//        }
+//    }
+//    if (mostrarDialogo) {
+//        AvisoDialog(
+//            titulo = if (errorMessage != null) "Error" else "Éxito",
+//            mensaje = errorMessage ?: successMessage ?: "",
+//            esError = errorMessage != null,
+//            onDismiss = {
+//                mostrarDialogo = false
+//                viewModel.limpiarMensajes()
+//            }
+//        )
+//    }
 
     Box(
         modifier = Modifier
@@ -184,4 +210,36 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit){
             }
         }
     }
+}
+
+@Composable
+fun AvisoDialog(
+    titulo: String,
+    mensaje: String,
+    esError: Boolean = false,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = if (esError) Icons.Default.Error else Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = if (esError) Color.Red else Color(0xFF006192)
+            )
+        },
+        title = {
+            Text(text = titulo, style = MaterialTheme.typography.headlineSmall)
+        },
+        text = {
+            Text(text = mensaje, style = MaterialTheme.typography.bodyMedium)
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Aceptar", color = Color(0xFF006192), fontWeight = FontWeight.Bold)
+            }
+        },
+        shape = RoundedCornerShape(28.dp),
+        containerColor = Color.White
+    )
 }
