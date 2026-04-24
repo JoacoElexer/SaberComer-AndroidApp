@@ -44,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.AvisoDialog
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.InputComponent
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.PwInputComponent
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.LoginViewModel
@@ -54,6 +55,9 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
     val state by viewModel.loginState.collectAsStateWithLifecycle()
     var correo by remember { mutableStateOf("joacoe.vrz@example.com") }
     var pin by remember { mutableStateOf("root") } // TODO: eliminar datos de login por defecto
+
+    var mostrarDialogError by remember { mutableStateOf(false) }
+    var mensajeError by remember { mutableStateOf("") }
 
     val buttonBackground = Brush.verticalGradient(
         colors = listOf(
@@ -67,36 +71,17 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
             onLoginSuccess()
             viewModel.resetState()
         }
+        if (state is LoginViewModel.LoginState.Error) {
+            mensajeError = (state as LoginViewModel.LoginState.Error).mensaje
+            mostrarDialogError = true
+        }
     }
-
-//    var mostrarDialogo by remember { mutableStateOf(false) }
-//    LaunchedEffect(successMessage, errorMessage) {
-//        if (successMessage != null || errorMessage != null) {
-//            mostrarDialogo = true
-//        }
-//    }
-//    if (mostrarDialogo) {
-//        AvisoDialog(
-//            titulo = if (errorMessage != null) "Error" else "Éxito",
-//            mensaje = errorMessage ?: successMessage ?: "",
-//            esError = errorMessage != null,
-//            onDismiss = {
-//                mostrarDialogo = false
-//                viewModel.limpiarMensajes()
-//            }
-//        )
-//    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ){
-//        Image(
-//            painter = painterResource(R.drawable.background_img_top),
-//            contentDescription = null,
-//            contentScale = ContentScale.Crop
-//        )
         Column (
             modifier = Modifier
                 .fillMaxSize()
@@ -149,20 +134,12 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
                         color = Color.White
                     )
                     Spacer(Modifier.height(50.dp))
-                    InputComponent("Email", "Example17@gmail.com", correo, onValueChange = { correo = it })
+                    InputComponent("Email", "ejemplo@correo.com", correo, onValueChange = { correo = it })
                     Spacer(modifier = Modifier
                         .height(30.dp))
-                    PwInputComponent("Password", pin, onValueChange = { pin = it })
+                    PwInputComponent("Contraseña", pin, onValueChange = { pin = it })
                     Spacer(modifier = Modifier
                         .height(30.dp))
-                    if (state is LoginViewModel.LoginState.Error) {
-                        Text(
-                            (state as LoginViewModel.LoginState.Error).mensaje,
-                            color = Color.Red,
-                            fontSize = 14.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                    }
                     Button(
                         onClick = { viewModel.login(correo, pin) },
                         modifier = Modifier
@@ -209,37 +186,16 @@ fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
                 }
             }
         }
-    }
-}
-
-@Composable
-fun AvisoDialog(
-    titulo: String,
-    mensaje: String,
-    esError: Boolean = false,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = {
-            Icon(
-                imageVector = if (esError) Icons.Default.Error else Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = if (esError) Color.Red else Color(0xFF006192)
+        if (mostrarDialogError) {
+            AvisoDialog(
+                titulo = "Error al iniciar sesión",
+                mensaje = mensajeError,
+                esError = true,
+                onDismiss = {
+                    mostrarDialogError = false
+                    viewModel.resetState()
+                }
             )
-        },
-        title = {
-            Text(text = titulo, style = MaterialTheme.typography.headlineSmall)
-        },
-        text = {
-            Text(text = mensaje, style = MaterialTheme.typography.bodyMedium)
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Aceptar", color = Color(0xFF006192), fontWeight = FontWeight.Bold)
-            }
-        },
-        shape = RoundedCornerShape(28.dp),
-        containerColor = Color.White
-    )
+        }
+    }
 }

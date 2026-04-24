@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.FloatingActionButton
@@ -32,6 +33,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +51,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.AvisoDialog
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.HeaderComponent
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesGinecoObstetricos
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesHeredoFamiliares
@@ -85,14 +88,10 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
     }
 
     var mostrarDialogo by remember { mutableStateOf(false) }
+
     LaunchedEffect(successMessage, errorMessage) {
         if (successMessage != null || errorMessage != null) {
             mostrarDialogo = true
-            viewModel.limpiarMensajes()
-        }
-        if (successMessage != null && isEditing) {
-            isEditing = false
-            viewModel.limpiarMensajes()
         }
     }
 
@@ -186,6 +185,7 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
                 esError = errorMessage != null,
                 onDismiss = {
                     mostrarDialogo = false
+                    if (successMessage != null) isEditing = false
                     viewModel.limpiarMensajes()
                 }
             )
@@ -521,7 +521,15 @@ fun SwitchCampo(label: String, checked: Boolean, enabled: Boolean = true, onChec
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
-            enabled = enabled
+            enabled = enabled,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Color(0xFF006192),
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color.LightGray,
+                disabledCheckedTrackColor = Color(0xFF006192).copy(alpha = 0.4f),
+                disabledUncheckedTrackColor = Color.LightGray.copy(alpha = 0.4f)
+            )
         )
     }
 }
@@ -548,15 +556,20 @@ fun SeccionExpandible(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        onClick = { expandido = !expandido } // Al tocar la tarjeta se abre/cierra
+        onClick = { expandido = !expandido }, // Al tocar la tarjeta se abre/cierra
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = titulo, style = MaterialTheme.typography.titleMedium)
+                Text(text = titulo, style = MaterialTheme.typography.titleMedium, color = Color.Black)
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     imageVector = if (expandido) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = Color.Black
                 )
             }
             if (expandido) {

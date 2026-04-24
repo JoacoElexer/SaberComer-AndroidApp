@@ -37,7 +37,7 @@ private val LightColorScheme = lightColorScheme(
 fun SaberComerAndroidAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Esto desactiva el modo dinamico de colores (oscuro y claro)
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -51,7 +51,7 @@ fun SaberComerAndroidAppTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = LightColorScheme, //Usar ColorScheme si se usa DynamicColor
         typography = Typography,
         content = content
     )

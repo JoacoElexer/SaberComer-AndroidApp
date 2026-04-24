@@ -118,6 +118,7 @@ class PatientsViewModel(private val repository: SaberComerRepository) : ViewMode
             _isLoading.value = true
             when (val result = repository.borrarPaciente(id)) {
                 is Resource.Success -> {
+                    _pacientes.value = _pacientes.value.filter { it.id != id }
                     _successMessage.value = "Paciente eliminado"
                     cargarPacientes()
                 }

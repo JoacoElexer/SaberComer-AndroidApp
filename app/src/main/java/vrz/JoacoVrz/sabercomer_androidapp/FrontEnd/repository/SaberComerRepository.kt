@@ -121,18 +121,16 @@ class SaberComerRepository(private val api: ApiService) {
                     Resource.Error("Respuesta vacía del servidor")
                 }
             } else {
-                // 1. Intentamos obtener el cuerpo del error
+                if (response.code() == 404 && defaultIfNull != null) {
+                    return Resource.Success(defaultIfNull)
+                }
                 val errorBodyString = response.errorBody()?.string()
-
-                // 2. Intentamos extraer el mensaje amigable
-                // Si tu API de Node envía algo como res.status(400).json({ message: "..." })
                 val mensajeLimpio = errorBodyString?.let {
                     try {
                         // Si el error es un JSON, buscamos el campo "message" o "error"
                         val jsonObject = org.json.JSONObject(it)
                         jsonObject.optString("message", jsonObject.optString("error", it))
                     } catch (e: Exception) {
-                        // Si no es JSON (es texto plano), devolvemos el texto tal cual
                         it
                     }
                 } ?: "Error desconocido (${response.code()})"

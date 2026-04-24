@@ -27,6 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.AvisoDialog
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.ConfirmacionDialog
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.HeaderComponent
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.patientCard
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.navigation.Screen
@@ -46,8 +51,8 @@ import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.PatientsViewModel
 fun HomeScreen(navController: NavController, viewModel: PatientsViewModel) {
     val pacientes by viewModel.pacientes.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val error by viewModel.errorMessage.collectAsStateWithLifecycle()
-    val success by viewModel.successMessage.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val successMessage by viewModel.successMessage.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.cargarPacientes()
@@ -60,6 +65,16 @@ fun HomeScreen(navController: NavController, viewModel: PatientsViewModel) {
         )
     )
     val secondBackground = Color(0xFF5ABDEF)
+
+    var mostrarDialogo by remember { mutableStateOf(false) }
+    LaunchedEffect(successMessage, errorMessage) {
+        if (successMessage != null || errorMessage != null) {
+            mostrarDialogo = true
+        }
+    }
+
+    var pacienteIdAEliminar by remember { mutableStateOf<String?>(null) }
+    var nombrePacienteAEliminar by remember { mutableStateOf("") }
     
     // Global container
     Scaffold(
@@ -114,12 +129,8 @@ fun HomeScreen(navController: NavController, viewModel: PatientsViewModel) {
                         .fillMaxSize()
                 ) {
 
-                    // Mostrar errores o mensajes
-                    error?.let { Text(it, color = Color.Red, modifier = Modifier.padding(16.dp)) }
-                    success?.let { Text(it, color = Color.Green, modifier = Modifier.padding(16.dp)) }
-
                     // Indicador de Carga de Lista (Si está cargando)
-                    if (isLoading && pacientes.isEmpty()) {
+                    if (isLoading) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
                         }
@@ -142,8 +153,8 @@ fun HomeScreen(navController: NavController, viewModel: PatientsViewModel) {
                                         navController.navigate(Screen.DetallePaciente.createRoute(paciente.id))
                                     },
                                     onDeleteClick = {
-                                        // Aquí se debe agregar un diálogo de confirmación en la versión final
-                                        viewModel.borrarPaciente(paciente.id)
+                                        pacienteIdAEliminar = paciente.id
+                                        nombrePacienteAEliminar = paciente.nombre
                                     }
                                 )
                             }
@@ -151,6 +162,30 @@ fun HomeScreen(navController: NavController, viewModel: PatientsViewModel) {
                     }
                 }
             }
+        }
+        if (pacienteIdAEliminar != null) {
+            ConfirmacionDialog(
+                titulo = "Eliminar paciente",
+                mensaje = "¿Estás seguro de que quieres eliminar a $nombrePacienteAEliminar? Esta acción no se puede deshacer.",
+                onConfirmar = {
+                    viewModel.borrarPaciente(pacienteIdAEliminar!!)
+                    pacienteIdAEliminar = null
+                },
+                onCancelar = {
+                    pacienteIdAEliminar = null
+                }
+            )
+        }
+        if (mostrarDialogo) {
+            AvisoDialog(
+                titulo = if (errorMessage != null) "Atención" else "¡Éxito!",
+                mensaje = errorMessage ?: successMessage ?: "",
+                esError = errorMessage != null,
+                onDismiss = {
+                    mostrarDialogo = false
+                    viewModel.limpiarMensajes()
+                }
+            )
         }
     }
 }

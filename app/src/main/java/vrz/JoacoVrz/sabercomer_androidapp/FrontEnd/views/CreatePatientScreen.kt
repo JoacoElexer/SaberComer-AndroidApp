@@ -54,6 +54,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.components.AvisoDialog
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesHeredoFamiliares
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesPersonalesNoPatologicos
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesPersonalesPatologicos
@@ -105,16 +106,12 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
     }
 
     var mostrarDialogo by remember { mutableStateOf(false) }
+    var navegarAlCerrar by remember { mutableStateOf(false) }
+
     LaunchedEffect(successMessage, errorMessage) {
         if (successMessage != null || errorMessage != null) {
             mostrarDialogo = true
-        }
-    }
-
-    LaunchedEffect(successMessage) {
-        if (successMessage != null) {
-            navController.popBackStack()
-            viewModel.limpiarMensajes()
+            if (successMessage != null) navegarAlCerrar = true
         }
     }
 
@@ -179,7 +176,11 @@ fun CrearPacienteScreen(navController: NavController, viewModel: PatientsViewMod
                 esError = errorMessage != null,
                 onDismiss = {
                     mostrarDialogo = false
-                    viewModel.limpiarMensajes() // Importante limpiar para que no se repita
+                    viewModel.limpiarMensajes()
+                    if (navegarAlCerrar) {
+                        navegarAlCerrar = false
+                        navController.popBackStack()
+                    }
                 }
             )
         }
