@@ -25,6 +25,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -34,10 +35,15 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,18 +65,29 @@ import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesPersonales
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.AntecedentesPersonalesPatologicos
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.ControlDePeso
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.models.Paciente
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.ControlClinicoViewModel
 import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.PatientsViewModel
+import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.viewModels.RecordMedidasViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PatientDetailScreen(navController: NavController, pacienteId: String, viewModel: PatientsViewModel) {
+fun PatientDetailScreen(
+    navController: NavController,
+    pacienteId: String,
+    viewModel: PatientsViewModel,
+    ccViewModel: ControlClinicoViewModel,
+    rmViewModel: RecordMedidasViewModel
+    ) {
 
     val pacienteDetalle by viewModel.pacienteSeleccionado.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val successMessage by viewModel.successMessage.collectAsStateWithLifecycle()
 
-    var isEditing by remember { mutableStateOf(false) }
+    var tabSeleccionada by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Ficha", "Control", "Medidas")
 
+    var isEditing by remember { mutableStateOf(false) }
     var editablePaciente by remember(pacienteDetalle) {
         mutableStateOf(pacienteDetalle?.copy())
     }
@@ -85,6 +102,8 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
 
     LaunchedEffect(pacienteId) {
         viewModel.cargarDetallePAciente(pacienteId)
+        ccViewModel.cargarControles(pacienteId)
+        rmViewModel.cargarMedidas(pacienteId)
     }
 
     var mostrarDialogo by remember { mutableStateOf(false) }
@@ -103,19 +122,43 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
 
     Scaffold(
         floatingActionButton = {
-            if (pacienteDetalle != null) {
-                FloatingActionButton(
-                    onClick = {
-                        if (isEditing) onSave() else isEditing = true
-                    },
-                    containerColor = Color(0xFF006192),
-                    contentColor = Color.White,
-                    shape = MaterialTheme.shapes.extraLarge
-                ) {
-                    Icon(
-                        imageVector = if (isEditing) Icons.Filled.Save else Icons.Filled.Edit,
-                        contentDescription = if (isEditing) "Guardar" else "Editar"
-                    )
+            when (tabSeleccionada) {
+                0 -> {
+                    if (pacienteDetalle != null) {
+                        FloatingActionButton(
+                            onClick = {
+                                if (isEditing) onSave() else isEditing = true
+                            },
+                            containerColor = Color(0xFF006192),
+                            contentColor = Color.White,
+                            shape = MaterialTheme.shapes.extraLarge
+                        ) {
+                            Icon(
+                                imageVector = if (isEditing) Icons.Filled.Save else Icons.Filled.Edit,
+                                contentDescription = if (isEditing) "Guardar" else "Editar"
+                            )
+                        }
+                    }
+                }
+                1 -> {
+                    FloatingActionButton(
+                        onClick = { ccViewModel.mostrarBottomSheet() },
+                        containerColor = Color(0xFF006192),
+                        contentColor = Color.White,
+                        shape = MaterialTheme.shapes.extraLarge
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "Nuevo Control")
+                    }
+                }
+                2 -> {
+                    FloatingActionButton(
+                        onClick = { rmViewModel.mostrarBottomSheet() },
+                        containerColor = Color(0xFF006192),
+                        contentColor = Color.White,
+                        shape = MaterialTheme.shapes.extraLarge
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "Nueva Medida")
+                    }
                 }
             }
         }
@@ -133,7 +176,11 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
             ) {
                 HeaderComponent(
                     title = pacienteDetalle?.nombre ?: "Detalle Paciente",
-                    subtitle = if (isEditing) "Modo Edición" else "Ficha Clínica"
+                    subtitle = when (tabSeleccionada) {
+                        0 -> if (isEditing) "Modo Edición" else "Ficha Clínica"
+                        1 -> "Control de Peso"
+                        else -> "Récord de Medidas"
+                    }
                 )
             }
 
@@ -148,36 +195,61 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
                     modifier = Modifier
                         .background(Color.White, shape = RoundedCornerShape(topStart = 50.dp))
                         .fillMaxSize()
-                        .padding(top = 16.dp)
                 ) {
+                    TabRow(
+                        selectedTabIndex = tabSeleccionada,
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF006192),
+                        indicator = { tabPositions ->
+                            TabRowDefaults.Indicator(
+                                modifier = Modifier.tabIndicatorOffset(tabPositions[tabSeleccionada]),
+                                color = Color(0xFF006192)
+                            )
+                        }
+                    ) {
+                        tabs.forEachIndexed { index, titulo ->
+                            Tab(
+                                selected = tabSeleccionada == index,
+                                onClick = { tabSeleccionada = index },
+                                text = {
+                                    Text(
+                                        text = titulo,
+                                        color = if (tabSeleccionada == index)
+                                            Color(0xFF006192) else Color.Gray,
+                                        fontWeight = if (tabSeleccionada == index)
+                                            FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            )
+                        }
+                    }
 
                     if (isLoading && pacienteDetalle == null) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
                         }
-                    }
-                    errorMessage?.let { Text(it, color = Color.Red, modifier = Modifier.padding(16.dp)) }
-
-                    pacienteDetalle?.let {
-                        LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).background(Color.Transparent, shape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp))) {
-                            item {
-                                DetallesDeFicha(
-                                    paciente = editablePaciente ?: it,
-                                    isEditing = isEditing,
-                                    onValueChange = { updated -> editablePaciente = updated }
-                                )
-                            }
-                        }
-                    } ?: run {
-                        if (!isLoading) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text("Paciente no encontrado.")
-                            }
+                    } else {
+                        when (tabSeleccionada) {
+                            0 -> TabFicha(
+                                paciente = editablePaciente ?: pacienteDetalle,
+                                isEditing = isEditing,
+                                isLoading = isLoading,
+                                onValueChange = { editablePaciente = it }
+                            )
+                            1 -> TabControlClinico(
+                                pacienteId = pacienteId,
+                                viewModel = ccViewModel
+                            )
+                            2 -> TabRecordMedidas(
+                                pacienteId = pacienteId,
+                                viewModel = rmViewModel
+                            )
                         }
                     }
                 }
             }
         }
+
         if (mostrarDialogo) {
             AvisoDialog(
                 titulo = if (errorMessage != null) "Atención" else "¡Éxito!",
@@ -189,6 +261,35 @@ fun PatientDetailScreen(navController: NavController, pacienteId: String, viewMo
                     viewModel.limpiarMensajes()
                 }
             )
+        }
+    }
+}
+
+@Composable
+private fun TabFicha(
+    paciente: Paciente?,
+    isEditing: Boolean,
+    isLoading: Boolean,
+    onValueChange: (Paciente) -> Unit
+) {
+    if (paciente == null) {
+        if (!isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Paciente no encontrado")
+            }
+        }
+        return
+    }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
+    ) {
+        item {
+            DetallesDeFicha(
+                paciente = paciente,
+                isEditing = isEditing,
+                onValueChange = onValueChange
+            )
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
@@ -210,7 +311,7 @@ fun DetallesDeFicha(paciente: Paciente, isEditing: Boolean, onValueChange: (Paci
         }
     }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).background(Color.Transparent, shape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp))) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp).background(Color.Transparent, shape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp))) {
         Text("Información Básica", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Black)
         Divider(modifier = Modifier.padding(vertical = 4.dp))
 

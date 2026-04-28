@@ -24,6 +24,9 @@ class RecordMedidasViewModel(private val repository: SaberComerRepository) : Vie
 
     private var currentPacienteId: String? = null
 
+    private val _mostrarBottomSheet = MutableStateFlow(false)
+    val mostrarBottomSheet: StateFlow<Boolean> = _mostrarBottomSheet
+
     fun cargarMedidas(pacienteId: String) {
         currentPacienteId = pacienteId
         viewModelScope.launch {
@@ -93,5 +96,13 @@ class RecordMedidasViewModel(private val repository: SaberComerRepository) : Vie
     fun limpiarMensajes() {
         _errorMessage.value = null
         _successMessage.value = null
+    }
+
+    fun mostrarBottomSheet() {
+        _mostrarBottomSheet.value = true
+    }
+
+    fun ocultarBottomSheet() {
+        _mostrarBottomSheet.value = false
     }
 }

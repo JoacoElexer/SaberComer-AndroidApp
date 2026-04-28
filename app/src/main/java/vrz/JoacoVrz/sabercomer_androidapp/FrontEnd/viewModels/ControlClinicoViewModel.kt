@@ -8,6 +8,7 @@ import vrz.JoacoVrz.sabercomer_androidapp.FrontEnd.utils.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+
 class ControlClinicoViewModel(private val repository: SaberComerRepository) : ViewModel() {
     private val _controles = MutableStateFlow<List<ControlClinico>>(emptyList())
     val controles: StateFlow<List<ControlClinico>> = _controles
@@ -22,6 +23,9 @@ class ControlClinicoViewModel(private val repository: SaberComerRepository) : Vi
     val successMessage: StateFlow<String?> = _successMessage
 
     private var currentPacienteId: String? = null
+
+    private val _mostrarBottomSheet = MutableStateFlow(false)
+    val mostrarBottomSheet: StateFlow<Boolean> = _mostrarBottomSheet
 
     fun cargarControles(pacienteId: String) {
         currentPacienteId = pacienteId
@@ -90,5 +94,13 @@ class ControlClinicoViewModel(private val repository: SaberComerRepository) : Vi
     fun limpiarMensajes() {
         _errorMessage.value = null
         _successMessage.value = null
+    }
+
+    fun mostrarBottomSheet() {
+        _mostrarBottomSheet.value = true
+    }
+
+    fun ocultarBottomSheet() {
+        _mostrarBottomSheet.value = false
     }
 }

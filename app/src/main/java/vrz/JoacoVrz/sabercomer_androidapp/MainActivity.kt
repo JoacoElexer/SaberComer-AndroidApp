@@ -91,7 +91,14 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("pacienteId") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val pacienteId = backStackEntry.arguments?.getString("pacienteId") ?: ""
-                        PatientDetailScreen(navController, pacienteId, viewModel(factory = factory))
+                        PatientDetailScreen(
+                            navController = navController,
+                            pacienteId = pacienteId,
+                            viewModel = viewModel(factory = factory),
+                            ccViewModel = viewModel(factory = factory),
+                            rmViewModel = viewModel(factory = factory)
+
+                        )
                     }
 
                     // 5. CALENDARIO
